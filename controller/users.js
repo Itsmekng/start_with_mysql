@@ -1,16 +1,21 @@
 const db = require('../utils/db.js')
-
-const addUser = (req, res) =>{
+const Users = require('../model/Users.js')
+const addUser = async (req, res) =>{
 
     try{
         const {name , email} = req.body;
         
-        const insertQuery = `insert into Users (name,email) values (?,?)`;
-        
-        db.execute(insertQuery,[name,email]);
-        
+        const user = await Users.create({name,email})
+
+        if(!user){
+            return res.status(400).json({
+            message: "User not added",
+            status:false
+        })
+        }
+
         return res.status(200).json({
-            message: "User added",
+            message: user,
             status: true
         })
     }catch(err){
@@ -24,18 +29,20 @@ const addUser = (req, res) =>{
 
 const getUser = async (req,res) =>{
     try{
-        const getQuery = `select * from Users`
         
-        db.execute(getQuery,(err,data) =>{
-            if(err){
-                console.log(err);
-            }
-            
-            return res.status(200).json({
-                data: data,
-                status: true
-            })
+        const user = await Users.findAll();
+
+        if(!user){
+            return res.status(400).json({
+                message: "Users not found",
+                status:false
         });
+        }
+
+        return res.status(200).json({
+            data: user,
+            status: true
+        })
 
     }catch(err){
         return res.status(400).json({

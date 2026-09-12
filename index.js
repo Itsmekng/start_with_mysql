@@ -14,8 +14,12 @@ app.use("/users",userRouter);
 
 app.use("/buses",busesRouter);
 
-const port = 3000;
-
-app.listen(port,() =>{
-    console.log("Server started");
-});
+db.sync({force: true}).then(() =>{
+    const port = 3000;
+    
+    app.listen(port,() =>{
+        console.log("Server started");
+    });
+}).catch((err) =>{
+    console.log(err)
+})

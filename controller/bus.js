@@ -1,16 +1,23 @@
 const db = require('../utils/db.js');
+const Buses = require('../model/Buses.js')
+const { Op } = require('sequelize')
 
-const addBus = (req,res) =>{
+const addBus = async (req,res) =>{
 
     try{
         const { busNumber , totalSeats , availableSeats } = req.body;
         
-        const insertQuery = `insert into Buses (busNumber,totalSeats,availableSeats) values (?,?,?)`;
-        
-        db.execute(insertQuery,[busNumber,totalSeats,availableSeats]);
+        const buses = await Buses.create({busNumber,totalSeats,availableSeats});
+
+        if(!buses){
+            return res.status(400).json({
+                Message: "Bus not add",
+                status: true
+            })
+        }
         
         return res.status(200).json({
-            Message: "Bus added",
+            Message: buses,
             status: true
         })
     }catch(err){
@@ -21,15 +28,25 @@ const addBus = (req,res) =>{
     }
 }
 
-const getAvailableBus = (req,res) =>{
+const getAvailableBus = async (req,res) =>{
     try{
-        const getQuery = `select * from buses where availableSeats >= ?`;
-        
-        const Data = db.execute(getQuery,[req.params.seats],(err,data) =>{
-            return res.status(200).json({
-                data: data,
-                status: true
-            })
+
+        const buses = await Buses.findAll({
+            where:{
+                totalSeats: { [Op.gte]: req.params.seats }
+            }
+        })
+
+        if(!buses){
+           return res.status(200).json({
+            data: "Buses not found",
+            status: true
+        }); 
+        }
+
+        return res.status(200).json({
+            data: buses,
+            status: true
         });
         
     }catch(err){
